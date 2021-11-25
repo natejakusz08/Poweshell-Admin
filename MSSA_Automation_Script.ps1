@@ -97,11 +97,23 @@ while ($continue) {
 	Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount
         }
 	"8" { 
-	function new-OU {
-		Param(
-			[string[]]$OU
-		)
-		New-ADOrganizationalUnit -Name "$OU" -Path "DC=ADATUM,DC=COM"
+	function CreateOU {
+    Param([string]$Name)}
+    $name = Read-host “enter OU Name”
+         #Format variables into valid Distinguished Name.
+        $DistinguishedName = "OU=$Name,dc=adatum,dc=com"
+          #Check to see if OU already exists.
+                try {
+                        Get-ADOrganizationalUnit -Identity $DistinguishedName | Out-Null
+                                Write-Host "CreateOU - OU Already Existed: $DistinguishedName"
+                                    }
+
+                                        #Create OU if does not exist
+                                            catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+                                                    Write-Host "CreateOU - Creating new OU: $DistinguishedName"
+                                                            New-ADOrganizationalUnit -Name $Name -Path "dc=adatum,dc=com"
+                                                                    Write-Host "CreateOU - OU Created: $DistinguishedName"
+                                                                        }
 	}
         "X" {
 	            $continue = $false

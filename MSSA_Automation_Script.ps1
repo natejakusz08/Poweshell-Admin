@@ -21,7 +21,9 @@ while ($continue) {
     Write-Host "6. Identify accounts without logins >90 days "
     Write-Host "                                  "
     Write-Host "7. Disable accounts without logins >90 days "
-    Write-Host "                                  "  
+    Write-Host "   
+    Write-Host "8. Add New Organizational Unit OU"
+    Write-Host "
     Write-Host "X. Exit this menu                 "
     Write-Host "                                  "
     $choice = Read-Host  "Enter selection"
@@ -94,6 +96,13 @@ while ($continue) {
         "7" {
 	Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount
         }
+	"8" { 
+	function new-OU {
+		Param(
+			[string[]]$OU
+		)
+		New-ADOrganizationalUnit -Name "$OU" -Path "DC=ADATUM,DC=COM"
+	}
         "X" {
 	            $continue = $false
 	        }

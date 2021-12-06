@@ -97,9 +97,9 @@ while ($continue) {
         "8" {
                 function CreateOU {
                 Param([string]$Name1, [string]$Name2, [string]$Name3)}
-   	        $Name1 = Read-host “enter proposed OU Name”
-                $Name2 = Read-host "enter Domain Name"
-                $Name3 = Read-host "enter Domain Extension"
+   	        $Name1 = Read-host “enter proposed OU Name (Example = 'IT')”
+                $Name2 = Read-host "enter Domain Name (Example = 'Adatum')"
+                $Name3 = Read-host "enter Domain Extension (Example = 'com')"
                 #Format variables into valid Distinguished Name.
                 $DistinguishedName = "OU=$Name1,dc=$Name2,dc=$Name3"
                 #Check to see if OU already exists.

@@ -24,6 +24,8 @@ while ($continue) {
     Write-Host "   "  
     Write-Host "9. Force GPUpdate on Domain Computer"
     Write-Host "   "
+    Write-Host "13. Disable Stale Computers (>90 days) and Move to Stale OU"
+    Write-Host "   "
     Write-Host "X. Exit this menu                 "
     Write-Host "                                  "
     $choice = Read-Host  "Enter selection"
@@ -143,7 +145,7 @@ while ($continue) {
                 } 
                 } 
                 } 
-#Start GPUpdate Script Added by Brent
+	#Start GPUpdate Script Added by Brent
 	"9" {
 		function EnterComputerName {
    		 do {
@@ -178,7 +180,33 @@ while ($continue) {
 			Pause
 			EnterComputerName 
 		}
-#End GPUpdate script added by Brent
+	#End GPUpdate script added by Brent
+	#Start Remove Stale Computers
+	"13" {
+		#Specify the OU you want to search for inactive accounts 
+ 
+		$SourceOU="OU=Computers,DC=Adatum,DC=com"
+ 
+		#Specify the OU you want to move your inactive computer accounts to 
+ 
+		$DestinationOU="OU=DisabledComputers,DC=Adatum,DC=com" 
+ 
+		#Specify the number of days that computers have been inactive for. The 90 is the number of days from today since the last logon. 
+ 
+		$lldate = [DateTime]::Today.AddDays(-90);
+          
+		#DO NOT MODIFY BELOW THIS LINE 
+ 
+		$computers=Get-ADComputer -Filter ‘PasswordLastSet -le $lldate’ -Searchbase $SourceOU 
+ 
+		foreach ($computer in $computers){
+			$desc="Contact Support, disabled on $(Get-Date) - $($computer.Description)"
+			Set-ADComputer $Computer -Description $desc -Enabled $false
+			Move-ADObject $computer -TargetPath $destinationOU 
+			Add-Content C:\computers.txt -Value "Found $computer, Moved and disabled"
+			}
+		}
+	#End Remove Stale Computers
      "X" {
 	        $continue = $false
 	        }

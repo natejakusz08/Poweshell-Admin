@@ -96,10 +96,12 @@ while ($continue) {
         }
         "8" {
     function CreateOU {
-    Param([string]$Name)}
-    $name = Read-host “enter OU Name”
+    Param([string]$Name1, [string]$Name2, [string]$Name3)}
+   	$Name1 = Read-host “enter proposed OU Name”
+        $Name2 = Read-host "enter Domain Name"
+        $Name3 = Read-host "enter Domain Extension"
     #Format variables into valid Distinguished Name.
-    $DistinguishedName = "OU=$Name,dc=adatum,dc=com"
+    $DistinguishedName = "OU=$Name1,dc=$Name2,dc=$Name3"
     #Check to see if OU already exists.
     try {
     Get-ADOrganizationalUnit -Identity $DistinguishedName | Out-Null
@@ -108,7 +110,7 @@ while ($continue) {
     #Create OU if does not exist
     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
     Write-Host "CreateOU - Creating new OU: $DistinguishedName"
-    New-ADOrganizationalUnit -Name $Name -Path "dc=adatum,dc=com"
+    New-ADOrganizationalUnit -Name $Name1 -Path "dc=$Name2,dc=$Name3"
     Write-Host "CreateOU - OU Created: $DistinguishedName"
     } 
     }       

@@ -95,9 +95,35 @@ while ($continue) {
 	        Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount
                 }
         "8" {
+                $nested = Read-Host "Is OU nested? (y/N)"
+                If ($nested -eq "y")
+                {
                 function CreateOU {
                 Param([string]$Name1, [string]$Name2, [string]$Name3)}
-   	        $Name1 = Read-host “enter proposed OU Name (Example = 'IT')”
+                $Name1 = Read-host “enter proposed OU Name (Example = 'IT')”
+                $name4 = Read-host “enter base layer OU (Example = 'Adatum Chicago')”
+                $Name2 = Read-host "enter Domain Name (Example = 'Adatum')"
+                $Name3 = Read-host "enter Domain Extension (Example = 'com')"
+                #Format variables into valid Distinguished Name.
+                $DistinguishedName = "OU=$Name1,dc=$Name2,dc=$Name3"
+                #Check to see if OU already exists.
+                try {
+                Get-ADOrganizationalUnit -Identity $DistinguishedName | Out-Null
+                Write-Host "CreateOU - OU Already Existed: $DistinguishedName"
+                }
+                #Create OU if does not exist
+                catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+                Write-Host "CreateOU - Creating new OU: $DistinguishedName"
+                New-ADOrganizationalUnit -Name $Name1 -Path "ou=$name4, dc=$Name2,dc=$Name3"
+                Write-Host "CreateOU - OU Created: $DistinguishedName"
+                } 
+                }
+                ########################################################################
+                Else
+                {
+                function CreateOU {
+                Param([string]$Name1, [string]$Name2, [string]$Name3)}
+                $Name1 = Read-host “enter proposed OU Name (Example = 'IT')”
                 $Name2 = Read-host "enter Domain Name (Example = 'Adatum')"
                 $Name3 = Read-host "enter Domain Extension (Example = 'com')"
                 #Format variables into valid Distinguished Name.
@@ -113,7 +139,8 @@ while ($continue) {
                 New-ADOrganizationalUnit -Name $Name1 -Path "dc=$Name2,dc=$Name3"
                 Write-Host "CreateOU - OU Created: $DistinguishedName"
                 } 
-                }       
+                } 
+                }     
      "X" {
 	        $continue = $false
 	        }

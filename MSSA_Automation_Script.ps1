@@ -19,6 +19,8 @@ while ($continue) {
     Write-Host "6. Identify accounts without logins >90 days "
     Write-Host "                                  "
     Write-Host "7. Disable accounts without logins >90 days "
+    write-Host "                                  "
+    Write-Host "11. Move User to New OU"
     Write-Host "                                  "  
     Write-Host "X. Exit this menu                 "
     Write-Host "                                  "
@@ -92,6 +94,26 @@ while ($continue) {
         "7" {
 	Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount
         }
+	
+	"11"
+	function ReassignUserOU {
+    Param([string]$Name1, [string]$Name2)[string]$Name3,[string]$Name4 }
+        $Name1 = Read-host “enter Username”
+        $Name2 = Read-host "enter new OU Name (i.e. IT)"
+        $Name3 = Read-Host "enter DOmain (i.e. Adatum)"
+        $Name4 = Read-Host "enter Domain extension (i.e. com)"
+         #Check to see if user exists.
+Try 
+{
+ Get-ADUser "$Name1" | Move-ADObject -TargetPath "OU=$Name2,dc=$Name3,dc=$Name4"
+ write-host "User moved to OU = $Name2"
+      
+      }
+      Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
+      {
+     
+          Write-Host "$Name1 can not be found " -ForegroundColor Red
+              }
         "X" {
 	            $continue = $false
 	        }

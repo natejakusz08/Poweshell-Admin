@@ -1,12 +1,10 @@
-$continue = $true
+  $continue = $true
 while ($continue) {
     #Write-Host "'n'n'n" # adds three blank lines
     Write-Host "                                                                     "
     Write-Host "====================================================================="
     Write-Host "     Microsoft Software and Systems Academy Carpe-Schema Menu        "
     Write-Host "====================================================================="
-    Write-Host "                          By N8ZGR8                                "
-	Write-Host "====================================================================="
     Write-Host "                                  "
     Write-Host "1. Disable an AD user account    "
     Write-Host "                                  "
@@ -21,7 +19,9 @@ while ($continue) {
     Write-Host "6. Identify accounts without logins >90 days "
     Write-Host "                                  "
     Write-Host "7. Disable accounts without logins >90 days "
-    Write-Host "                                  "  
+    Write-Host "   "
+    Write-Host "8. Add New Organizational Unit OU"
+    Write-Host "   "  
     Write-Host "X. Exit this menu                 "
     Write-Host "                                  "
     $choice = Read-Host  "Enter selection"
@@ -32,7 +32,7 @@ while ($continue) {
 	}
 	$termuser = Read-Host "Enter username:"
 	$fullname = (Get-Aduser -Identity $termuser).Name
-	$Answer = Read-Host "$fullname will be disabled. Is this the information you want to use (y/N)"
+	$Answer = Read-Host "$fullname will be disabled. Is this the information you want to use (Y/N)"
 	If ($Answer.ToUpper() -ne "Y")
 	{ Write-Host "`n`nOK.  Please rerun the script and reenter the data correctly.`n"
 	Break
@@ -94,7 +94,27 @@ while ($continue) {
         "7" {
 	Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount
         }
-        "X" {
+        "8" {
+    function CreateOU {
+    Param([string]$Name1, [string]$Name2, [string]$Name3)}
+   	$Name1 = Read-host “enter proposed OU Name”
+        $Name2 = Read-host "enter Domain Name"
+        $Name3 = Read-host "enter Domain Extension"
+    #Format variables into valid Distinguished Name.
+    $DistinguishedName = "OU=$Name1,dc=$Name2,dc=$Name3"
+    #Check to see if OU already exists.
+    try {
+    Get-ADOrganizationalUnit -Identity $DistinguishedName | Out-Null
+    Write-Host "CreateOU - OU Already Existed: $DistinguishedName"
+    }
+    #Create OU if does not exist
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+    Write-Host "CreateOU - Creating new OU: $DistinguishedName"
+    New-ADOrganizationalUnit -Name $Name1 -Path "dc=$Name2,dc=$Name3"
+    Write-Host "CreateOU - OU Created: $DistinguishedName"
+    } 
+    }       
+     "X" {
 	            $continue = $false
 	        }
                default {

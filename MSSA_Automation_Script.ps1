@@ -94,7 +94,10 @@ while ($continue) {
 	        Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} | %{Get-ADUser $_.ObjectGuid} | select name, givenname, surname, Userprincipalname  | out-gridview
                 }
         "7" {
-	        Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount
+	        $TargetOU =  "ou=StaleUsers,dc=Adatum,dc=com"
+		
+		Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Move-ADObject  -TargetPath $TargetOU
+		Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount
                 }
         "8" {
                 $nested = Read-Host "Is OU nested? (y/N)"

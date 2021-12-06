@@ -21,7 +21,9 @@ while ($continue) {
     Write-Host "7. Disable accounts without logins >90 days "
     Write-Host "   "
     Write-Host "8. Add New Organizational Unit (OU)"
-    Write-Host "   "  
+    Write-Host "   " 
+    Write-Host "9. Force GPUpdate on Domain Computer"
+    Write-Host "   " 
     Write-Host "X. Exit this menu                 "
     Write-Host "                                  "
     $choice = Read-Host  "Enter selection"
@@ -113,7 +115,57 @@ while ($continue) {
                 New-ADOrganizationalUnit -Name $Name1 -Path "dc=$Name2,dc=$Name3"
                 Write-Host "CreateOU - OU Created: $DistinguishedName"
                 } 
-                }       
+                } 
+	#Start GPUpdate Script Added by Brent
+	"9" {
+		function EnterComputerName {
+
+   		 do {
+
+       			Clear-Host
+      			$ComputerName = Read-Host "`nEnter computer name"
+        
+   		} until ($ComputerName)
+
+    			$ComputerName = $ComputerName.ToUpper()
+
+    		if (Test-Connection -ComputerName $ComputerName -Count 1 -Quiet) {
+
+        	$Session = New-PSSession -ComputerName $ComputerName -ErrorAction SilentlyContinue
+
+        	if ($Session) {Update}
+
+        	else {
+
+            		Clear-Host
+            		Write-Host "`nError: Could not establish PowerShell session with $ComputerName.`n" -ForegroundColor Red
+            		Pause
+        	}
+    		}
+    		else {
+
+        		Clear-Host
+        		Write-Host "`nError: $ComputerName is not on the network.`n" -ForegroundColor Red
+        		Pause
+   		}
+		}
+
+		function Update {
+
+    			Clear-Host
+    			Invoke-Command -Session $Session -ScriptBlock {gpupdate.exe /force /wait:0}
+    			Remove-PSSession -Session $Session
+		}
+
+		if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) 
+			{ Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
+
+			Clear-Host
+			Write-Output "`nThis will perform a gpupdate /force on a remote computer.`n"
+			Pause
+			EnterComputerName 
+		}
+#End GPUpdate script added by Brent
      "X" {
 	        $continue = $false
 	        }

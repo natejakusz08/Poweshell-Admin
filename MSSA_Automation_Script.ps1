@@ -146,47 +146,33 @@ while ($continue) {
 #Start GPUpdate Script Added by Brent
 	"9" {
 		function EnterComputerName {
-
    		 do {
-
        			Clear-Host
       			$ComputerName = Read-Host "`nEnter computer name"
-        
    		} until ($ComputerName)
-
     			$ComputerName = $ComputerName.ToUpper()
-
     		if (Test-Connection -ComputerName $ComputerName -Count 1 -Quiet) {
-
         	$Session = New-PSSession -ComputerName $ComputerName -ErrorAction SilentlyContinue
-
         	if ($Session) {Update}
-
         	else {
-
             		Clear-Host
             		Write-Host "`nError: Could not establish PowerShell session with $ComputerName.`n" -ForegroundColor Red
             		Pause
         	}
     		}
     		else {
-
         		Clear-Host
         		Write-Host "`nError: $ComputerName is not on the network.`n" -ForegroundColor Red
         		Pause
    		}
 		}
-
 		function Update {
-
     			Clear-Host
     			Invoke-Command -Session $Session -ScriptBlock {gpupdate.exe /force /wait:0}
     			Remove-PSSession -Session $Session
 		}
-
 		if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) 
 			{ Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
-
 			Clear-Host
 			Write-Output "`nThis will perform a gpupdate /force on a remote computer.`n"
 			Pause

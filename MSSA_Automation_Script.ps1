@@ -26,6 +26,8 @@ while ($continue) {
     Write-Host "   "
     Write-Host "11. Move User to New OU"
     Write-Host " "
+    Write-Host "12. Force GPUpdate on Domain Computer"
+    Write-Host "   "
     Write-Host "13. Disable Stale Computers (>90 days) and Move to Stale OU"
     Write-Host "   "
     Write-Host "X. Exit this menu                 "
@@ -190,6 +192,7 @@ while ($continue) {
 			Pause
 			EnterComputerName 
 		}
+		#End GPUpdate script added by Brent
                 "11"{
 	function ReassignUserOU {
     Param([string]$Name1, [string]$Name2,[string]$Name3,[string]$Name4) }
@@ -209,11 +212,45 @@ Write-Host "$Name1 can not be found" -ForegroundColor Red
 Catch [System.Management.Automation.RuntimeException] { 
 Write-Host "OU $Name2\$Name3.$Name4 can not be found" -ForegroundColor Red 
 }
-
-     
           Write-Host "$Name1 can not be found " -ForegroundColor Red
               }
 	#End GPUpdate script added by Brent
+  "12" {
+	#Establishes Variable Baseline For Batch User Creation
+		$Drive = Read-host "Input Drive letter of CSV (Exmaple J:)"
+		$FilePath = Read-Host "Input File Path of CSV (Example Windows\Users\Bob\Desktop\BatchUsers.csv)"
+		$DC1 = Read-Host "Input Organization Domain (Example Adatum)"
+		$DC2 = Read-Host "Input Public Domain (Example com / eu / au)"
+		$TarPath = $Drive+"\"+$FilePath
+
+#Pulls Data from CSV & Creates Users
+		$UserAccounts = Import-CSV -Path $TarPath
+
+		Foreach ($user in $UserAccounts)
+        {
+    
+ 		$DisplayName = $user.FirstName+" "+$user.LastName
+ 		$UserFirstname = $user.FirstName
+ 		$UserLastname = $user.LastName
+ 		$SAM = $user.SamAccountName
+ 		$UPN = $user.UPN
+ 		$Department = $user.Department
+ 		$Password = $user.Password
+ 		$TarOU = "ou=$Department,dc=$DC1,dc=$DC2"
+
+		New-ADUser `
+		-Name $DisplayName `
+		-Enabled $False `
+		-GivenName $UserFirstname `
+		-Surname $UserLastname `
+		-AccountPassword (ConvertTo-SecureString $Password -AsPlainText -Force)`
+		-ChangePasswordAtLogon $True `
+		-SamAccountName $SAM `
+		-UserPrincipalName $UPN `
+		-Department $Department `
+		-Path $TarOU
+        }
+		}
 	#Start Remove Stale Computers
 	"13" {
 		#Specify the OU you want to search for inactive accounts 

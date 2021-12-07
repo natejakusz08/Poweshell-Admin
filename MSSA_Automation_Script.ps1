@@ -94,7 +94,12 @@ while ($continue) {
 	        Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} | %{Get-ADUser $_.ObjectGuid} | select name, givenname, surname, Userprincipalname  | out-gridview
                 }
         "7" {
-	        $TargetOU =  "ou=StaleUsers,dc=Adatum,dc=com"
+	    $OU1 = Read-Host "Enter Name of Stale Account OU"
+            $DC1 = Read-Host "Enter Name of Organization Domain"
+            $DC2 = Read-Host "Enter Name of Public Domain"
+        
+            $TargetOU =  "ou=$OU1,dc=$DC1,dc=$DC2"
+            
 		
 		Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Move-ADObject  -TargetPath $TargetOU
 		Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount

@@ -19,9 +19,6 @@ while ($continue) {
     Write-Host "6. Identify accounts without logins >90 days "
     Write-Host "                                  "
     Write-Host "7. Disable accounts without logins >90 days "
-
-                                 "  
-=======
     Write-Host "   "
     Write-Host "8. Add New Organizational Unit (OU)"
     Write-Host "   "  

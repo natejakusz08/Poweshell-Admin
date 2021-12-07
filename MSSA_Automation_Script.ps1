@@ -24,6 +24,8 @@ while ($continue) {
     Write-Host "   "  
     Write-Host "9. Force GPUpdate on Domain Computer"
     Write-Host "   "
+    Write-Host "11. Move User to New OU"
+    Write-Host " "
     Write-Host "12. Force GPUpdate on Domain Computer"
     Write-Host "   "
     Write-Host "13. Disable Stale Computers (>90 days) and Move to Stale OU"
@@ -191,7 +193,29 @@ while ($continue) {
 			EnterComputerName 
 		}
 		#End GPUpdate script added by Brent
-	"12" {
+                "11"{
+	function ReassignUserOU {
+    Param([string]$Name1, [string]$Name2,[string]$Name3,[string]$Name4) }
+$Name1 = Read-host “enter Username”
+$Name2 = Read-host "enter new OU Name (i.e. IT)"
+$Name3 = Read-Host "enter DOmain (i.e. Adatum)"
+$Name4 = Read-Host "enter Domain extension (i.e. com)"
+ #Check to see if user OU and extension exists.
+try {
+$user = Get-ADuser "$Name1" 
+$user | Move-ADObject -TargetPath "OU=$Name2,dc=$Name3,dc=$Name4" -erroraction stop
+Write-Host "User moved to OU: $Name2" -ForegroundColor Green
+}
+Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+Write-Host "$Name1 can not be found" -ForegroundColor Red                                                      
+}
+Catch [System.Management.Automation.RuntimeException] { 
+Write-Host "OU $Name2\$Name3.$Name4 can not be found" -ForegroundColor Red 
+}
+          Write-Host "$Name1 can not be found " -ForegroundColor Red
+              }
+	#End GPUpdate script added by Brent
+  "12" {
 	#Establishes Variable Baseline For Batch User Creation
 		$Drive = Read-host "Input Drive letter of CSV (Exmaple J:)"
 		$FilePath = Read-Host "Input File Path of CSV (Example Windows\Users\Bob\Desktop\BatchUsers.csv)"

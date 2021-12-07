@@ -24,6 +24,8 @@ while ($continue) {
     Write-Host "   "  
     Write-Host "9. Force GPUpdate on Domain Computer"
     Write-Host "   "
+    Write-Host "12. Force GPUpdate on Domain Computer"
+    Write-Host "   "
     Write-Host "13. Disable Stale Computers (>90 days) and Move to Stale OU"
     Write-Host "   "
     Write-Host "X. Exit this menu                 "
@@ -188,7 +190,43 @@ while ($continue) {
 			Pause
 			EnterComputerName 
 		}
-	#End GPUpdate script added by Brent
+		#End GPUpdate script added by Brent
+	"12" {
+	#Establishes Variable Baseline For Batch User Creation
+		$Drive = Read-host "Input Drive letter of CSV (Exmaple J:)"
+		$FilePath = Read-Host "Input File Path of CSV (Example Windows\Users\Bob\Desktop\BatchUsers.csv)"
+		$DC1 = Read-Host "Input Organization Domain (Example Adatum)"
+		$DC2 = Read-Host "Input Public Domain (Example com / eu / au)"
+		$TarPath = $Drive+"\"+$FilePath
+
+#Pulls Data from CSV & Creates Users
+		$UserAccounts = Import-CSV -Path $TarPath
+
+		Foreach ($user in $UserAccounts)
+        {
+    
+ 		$DisplayName = $user.FirstName+" "+$user.LastName
+ 		$UserFirstname = $user.FirstName
+ 		$UserLastname = $user.LastName
+ 		$SAM = $user.SamAccountName
+ 		$UPN = $user.UPN
+ 		$Department = $user.Department
+ 		$Password = $user.Password
+ 		$TarOU = "ou=$Department,dc=$DC1,dc=$DC2"
+
+		New-ADUser `
+		-Name $DisplayName `
+		-Enabled $False `
+		-GivenName $UserFirstname `
+		-Surname $UserLastname `
+		-AccountPassword (ConvertTo-SecureString $Password -AsPlainText -Force)`
+		-ChangePasswordAtLogon $True `
+		-SamAccountName $SAM `
+		-UserPrincipalName $UPN `
+		-Department $Department `
+		-Path $TarOU
+        }
+		}
 	#Start Remove Stale Computers
 	"13" {
 		#Specify the OU you want to search for inactive accounts 

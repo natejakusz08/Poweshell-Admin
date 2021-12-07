@@ -206,7 +206,6 @@ Write-Host "User moved to OU: $Name2" -ForegroundColor Green
 Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
 Write-Host "$Name1 can not be found" -ForegroundColor Red                                                      
 }
-
 Catch [System.Management.Automation.RuntimeException] { 
 Write-Host "OU $Name2\$Name3.$Name4 can not be found" -ForegroundColor Red 
 }

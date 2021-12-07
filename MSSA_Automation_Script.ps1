@@ -5,7 +5,7 @@ while ($continue) {
     Write-Host "====================================================================="
     Write-Host "     Microsoft Software and Systems Academy Carpe-Schema Menu        "
     Write-Host "====================================================================="
-    Write-Host "                            OoRaH      "
+    Write-Host "                                  "
     Write-Host "1. Disable an AD user account    "
     Write-Host "                                  "
     Write-Host "2. Enable an AD user account "

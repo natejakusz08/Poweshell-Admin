@@ -97,20 +97,25 @@ while ($continue) {
 	
 	"11"
 	function ReassignUserOU {
-    Param([string]$Name1, [string]$Name2)[string]$Name3,[string]$Name4 }
-        $Name1 = Read-host “enter Username”
-        $Name2 = Read-host "enter new OU Name (i.e. IT)"
-        $Name3 = Read-Host "enter DOmain (i.e. Adatum)"
-        $Name4 = Read-Host "enter Domain extension (i.e. com)"
-         #Check to see if user exists.
-Try 
-{
- Get-ADUser "$Name1" | Move-ADObject -TargetPath "OU=$Name2,dc=$Name3,dc=$Name4"
- write-host "User moved to OU = $Name2"
-      
-      }
-      Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException]
-      {
+    Param([string]$Name1, [string]$Name2,[string]$Name3,[string]$Name4) }
+$Name1 = Read-host “enter Username”
+$Name2 = Read-host "enter new OU Name (i.e. IT)"
+$Name3 = Read-Host "enter DOmain (i.e. Adatum)"
+$Name4 = Read-Host "enter Domain extension (i.e. com)"
+ #Check to see if user OU and extension exists.
+try {
+$user = Get-ADuser "$Name1" 
+$user | Move-ADObject -TargetPath "OU=$Name2,dc=$Name3,dc=$Name4" -erroraction stop
+Write-Host "User moved to OU: $Name2" -ForegroundColor Green
+}
+Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+Write-Host "$Name1 can not be found" -ForegroundColor Red                                                      
+}
+
+Catch [System.Management.Automation.RuntimeException] { 
+Write-Host "OU $Name2\$Name3.$Name4 can not be found" -ForegroundColor Red 
+}
+
      
           Write-Host "$Name1 can not be found " -ForegroundColor Red
               }

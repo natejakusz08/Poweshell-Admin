@@ -26,7 +26,7 @@ while ($continue) {
     Write-Host "   "
     Write-Host "11. Move User to New OU"
     Write-Host " "
-    Write-Host "12. Force GPUpdate on Domain Computer"
+    Write-Host "12. Create Batch Users From CSV"
     Write-Host "   "
     Write-Host "13. Disable Stale Computers (>90 days) and Move to Stale OU"
     Write-Host "   "

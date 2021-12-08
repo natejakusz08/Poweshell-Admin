@@ -26,6 +26,12 @@ while ($continue) {
     Write-Host "   "
     Write-Host "10. Create AD user account          "
     Write-Host "                                    "
+    Write-Host "11. Move User to New OU"
+    Write-Host " "
+    Write-Host "12. Force GPUpdate on Domain Computer"
+    Write-Host "   "
+    Write-Host "13. Disable Stale Computers (>90 days) and Move to Stale OU"
+    Write-Host "   "
     Write-Host "X. Exit this menu                 "
     Write-Host "                                  "
     $choice = Read-Host  "Enter selection"
@@ -96,7 +102,15 @@ while ($continue) {
 	        Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} | %{Get-ADUser $_.ObjectGuid} | select name, givenname, surname, Userprincipalname  | out-gridview
                 }
         "7" {
-	        Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount
+	    $OU1 = Read-Host "Enter Name of Stale Account OU"
+            $DC1 = Read-Host "Enter Name of Organization Domain"
+            $DC2 = Read-Host "Enter Name of Public Domain"
+        
+            $TargetOU =  "ou=$OU1,dc=$DC1,dc=$DC2"
+            
+		
+		Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Move-ADObject  -TargetPath $TargetOU
+		Search-ADAccount -AccountInactive -TimeSpan 90.00:00:00 | ?{$_.enabled -eq $true} |  Disable-ADAccount
                 }
         "8" {
                 $nested = Read-Host "Is OU nested? (y/N)"
@@ -145,7 +159,7 @@ while ($continue) {
                 } 
                 } 
                 } 
-#Start GPUpdate Script Added by Brent
+	#Start GPUpdate Script Added by Brent
 	"9" {
 		function EnterComputerName {
    		 do {
@@ -180,6 +194,7 @@ while ($continue) {
 			Pause
 			EnterComputerName 
 		}
+
 #End GPUpdate script added by Brent
 		"10" {   #Start of Josh code
 			#Request users first name        
@@ -195,7 +210,7 @@ while ($continue) {
 			$CN = $userF + " " + $userL
 
 			#Takes the first initial of user first name adds a period and user last name (example: F.Lastname)
-			$SamN = $userF.Substring(0,1)+"."+$userL
+			$SamN = $userF.Substring(0,1)+$userL
 
 			#Retrieves the current domain name
 			$DomainN = Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object Domain
@@ -205,23 +220,112 @@ while ($continue) {
 
 			#Default location for user
 			$L1 = "OU="+$SelectedOU+",DC=Adatum,DC=com"
+      
+      #Creates a date 90 days from account creation
+      $Cdate = ((Get-Date).Date + "90")
+      $DName = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Name
 
 			#Ask user to input a password 
-			$PwReq = Write-Host "Password must meet the following requirement:" -ForegroundColor Yellow
-				 Write-Host "1. password must be at least 8 characters in length" -ForegroundColor Yellow
-				 Write-Host "2. three of the four characters need to be uppercase, lowercase,numbers, or symbols 'n" -ForegroundColor Yellow 
-				 Write-Host "3. Does not contain the user’s username" -ForegroundColor Yellow
-				 Write-Host "                   "
-				 Write-Host "                   "
-				 Read-Host -AsSecureString "Please provide a valid password" 
+			$PwReq = Write-Host "                                            "
+               Write-Host "Password must meet the following requirement:" -ForegroundColor Yellow
+               Write-Host "1. password must be at least 8 characters in length" -ForegroundColor Yellow
+               Write-Host "2. three of the four characters need to be uppercase, lowercase,numbers, or symbols 'n" -ForegroundColor Yellow 
+               Write-Host "3. Does not contain the user’s username" -ForegroundColor Yellow
+               Write-Host "                   "
+               Write-Host "                   "
+               Read-Host -AsSecureString "Please provide a valid password" 
 					 
 				Try {
 				New-ADUser -Name $CN -GivenName $userF -Surname $userL -SamAccountName $SamN -UserPrincipalName $upn -Path $L1 -AccountPassword $PwReq
-
+        Set-ADAccountExpiration -Server $DName -DateTime $Cdate -Identity $SamN
 				} catch {
 					  Write-Host "The user $CN already exist in '$DomainN.Domain' domain"
 				  }
 		} #End of Josh Code         
+    "11"{
+	function ReassignUserOU {
+    Param([string]$Name1, [string]$Name2,[string]$Name3,[string]$Name4) }
+$Name1 = Read-host “enter Username”
+$Name2 = Read-host "enter new OU Name (i.e. IT)"
+$Name3 = Read-Host "enter DOmain (i.e. Adatum)"
+$Name4 = Read-Host "enter Domain extension (i.e. com)"
+ #Check to see if user OU and extension exists.
+try {
+$user = Get-ADuser "$Name1" 
+$user | Move-ADObject -TargetPath "OU=$Name2,dc=$Name3,dc=$Name4" -erroraction stop
+Write-Host "User moved to OU: $Name2" -ForegroundColor Green
+}
+Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+Write-Host "$Name1 can not be found" -ForegroundColor Red                                                      
+}
+Catch [System.Management.Automation.RuntimeException] { 
+Write-Host "OU $Name2\$Name3.$Name4 can not be found" -ForegroundColor Red 
+}
+          Write-Host "$Name1 can not be found " -ForegroundColor Red
+              }
+	#End GPUpdate script added by Brent
+  "12" {
+	#Establishes Variable Baseline For Batch User Creation
+		$Drive = Read-host "Input Drive letter of CSV (Exmaple J:)"
+		$FilePath = Read-Host "Input File Path of CSV (Example Windows\Users\Bob\Desktop\BatchUsers.csv)"
+		$DC1 = Read-Host "Input Organization Domain (Example Adatum)"
+		$DC2 = Read-Host "Input Public Domain (Example com / eu / au)"
+		$TarPath = $Drive+"\"+$FilePath
+
+#Pulls Data from CSV & Creates Users
+		$UserAccounts = Import-CSV -Path $TarPath
+
+		Foreach ($user in $UserAccounts)
+        {
+    
+ 		$DisplayName = $user.FirstName+" "+$user.LastName
+ 		$UserFirstname = $user.FirstName
+ 		$UserLastname = $user.LastName
+ 		$SAM = $user.SamAccountName
+ 		$UPN = $user.UPN
+ 		$Department = $user.Department
+ 		$Password = $user.Password
+ 		$TarOU = "ou=$Department,dc=$DC1,dc=$DC2"
+
+		New-ADUser `
+		-Name $DisplayName `
+		-Enabled $False `
+		-GivenName $UserFirstname `
+		-Surname $UserLastname `
+		-AccountPassword (ConvertTo-SecureString $Password -AsPlainText -Force)`
+		-ChangePasswordAtLogon $True `
+		-SamAccountName $SAM `
+		-UserPrincipalName $UPN `
+		-Department $Department `
+		-Path $TarOU
+        }
+		}
+	#Start Remove Stale Computers
+	"13" {
+		#Specify the OU you want to search for inactive accounts 
+ 
+		$SourceOU="OU=Computers,DC=Adatum,DC=com"
+ 
+		#Specify the OU you want to move your inactive computer accounts to 
+ 
+		$DestinationOU="OU=DisabledComputers,DC=Adatum,DC=com" 
+ 
+		#Specify the number of days that computers have been inactive for. The 90 is the number of days from today since the last logon. 
+ 
+		$lldate = [DateTime]::Today.AddDays(-90);
+          
+		#DO NOT MODIFY BELOW THIS LINE 
+ 
+		$computers=Get-ADComputer -Filter ‘PasswordLastSet -le $lldate’ -Searchbase $SourceOU 
+ 
+		foreach ($computer in $computers){
+			$desc="Contact Support, disabled on $(Get-Date) - $($computer.Description)"
+			Set-ADComputer $Computer -Description $desc -Enabled $false
+			Move-ADObject $computer -TargetPath $destinationOU 
+			Add-Content C:\computers.txt -Value "Found $computer, Moved and disabled"
+			}
+		}
+	#End Remove Stale Computers
      "X" {
 	        $continue = $false
 	        }

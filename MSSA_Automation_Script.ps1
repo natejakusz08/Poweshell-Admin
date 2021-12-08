@@ -24,6 +24,8 @@ while ($continue) {
     Write-Host "   "  
     Write-Host "9. Force GPUpdate on Domain Computer"
     Write-Host "   "
+    Write-Host "10. Create AD user account          "
+    Write-Host "                                    "
     Write-Host "11. Move User to New OU"
     Write-Host " "
     Write-Host "12. Create Batch Users From CSV"
@@ -192,8 +194,55 @@ while ($continue) {
 			Pause
 			EnterComputerName 
 		}
-		#End GPUpdate script added by Brent
-                "11"{
+
+#End GPUpdate script added by Brent
+		"10" {   #Start of Josh code
+			#Request users first name        
+			$userF = Read-Host "Enter the user First name please"
+
+			#Request users last name
+			$userL = Read-Host "Enter the user Last name please"
+
+			#Organizational Unit the user will be place in
+			$SelectedOU = Read-Host "Please provide an OU" 
+
+			#Combines users first and last name
+			$CN = $userF + " " + $userL
+
+			#Takes the first initial of user first name adds a period and user last name (example: F.Lastname)
+			$SamN = $userF.Substring(0,1)+$userL
+
+			#Retrieves the current domain name
+			$DomainN = Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem | Select-Object Domain
+
+			#Takes the first initial of the user first name and the user last to user principle name (example: F.Lastname@domain.com)
+			$upn = $userF.Substring(0,1)+""+$userL+"@"+$DomainN.Domain
+
+			#Default location for user
+			$L1 = "OU="+$SelectedOU+",DC=Adatum,DC=com"
+      
+      #Creates a date 90 days from account creation
+      $Cdate = ((Get-Date).Date + "90")
+      $DName = Get-ADDomainController -Filter * | Select-Object -ExpandProperty Name
+
+			#Ask user to input a password 
+			$PwReq = Write-Host "                                            "
+               Write-Host "Password must meet the following requirement:" -ForegroundColor Yellow
+               Write-Host "1. password must be at least 8 characters in length" -ForegroundColor Yellow
+               Write-Host "2. three of the four characters need to be uppercase, lowercase,numbers, or symbols 'n" -ForegroundColor Yellow 
+               Write-Host "3. Does not contain the user’s username" -ForegroundColor Yellow
+               Write-Host "                   "
+               Write-Host "                   "
+               Read-Host -AsSecureString "Please provide a valid password" 
+					 
+				Try {
+				New-ADUser -Name $CN -GivenName $userF -Surname $userL -SamAccountName $SamN -UserPrincipalName $upn -Path $L1 -AccountPassword $PwReq
+        Set-ADAccountExpiration -Server $DName -DateTime $Cdate -Identity $SamN
+				} catch {
+					  Write-Host "The user $CN already exist in '$DomainN.Domain' domain"
+				  }
+		} #End of Josh Code         
+    "11"{
 	function ReassignUserOU {
     Param([string]$Name1, [string]$Name2,[string]$Name3,[string]$Name4) }
 $Name1 = Read-host “enter Username”

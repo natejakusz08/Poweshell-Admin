@@ -35,18 +35,18 @@
                                                                               
  # Microsoft Software & Systems Academy (MSSA) Carpe Schema
 
-###Description: 
+### Description: 
 
 MSSA is an 18-week academy hosted by Microsoft that teaches transitioning service members Microsoft server and Azure cloud administration principals. I started this project to learn more about powershell and how to take full advantage of Git/GitHub in a collaborative environment.
 
-###Features: 
+### Features: 
 
 This project uses PowerShell to automate many tasks from account/password management to group policy updates. It has a main menu and all you have to do is select whichever feature you would like to use and then enter the requisite information!
 Technologies/How to use: This program runs entirely on PowerShell! No additional software required.
 
 
 
-###Collaborators: 
+### Collaborators: 
 
 Nicolas Larson, James Reeves, Brent Erola, elijk88, Nathaniel Jakusz
 

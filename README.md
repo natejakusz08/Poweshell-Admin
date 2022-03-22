@@ -28,7 +28,7 @@
      ((((///****,******//////(((###%%%%&%   (((((((/////******,,,,,,,,,,,,,,,,,,,(#                 
     (((((*,/&&&&(.        %&&#/(###%%%&%   /,(((((/////******,,,,,,,,,,,,,,,,,,,/#                  
      
- # Microsoft Software & Systems Academy (MSSA) Carpe Schema
+ # Microsoft Software & Systems Academy Carpe Schema
 
 ### Description: 
 

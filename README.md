@@ -32,7 +32,7 @@
 
 ### Description: 
 
-MSSA is an 18-week academy hosted by Microsoft that teaches transitioning service members Microsoft server and Azure cloud administration principals. I started this project to learn more about PowerShell and how to take full advantage of Git/GitHub in a collaborative environment.
+MSSA is an 18-week academy hosted by Microsoft that teaches transitioning service members Microsoft server and Azure cloud administration principals. Carpe Schema was our cohort name after a joke about seizing a Schema Master role in Active Directory. I started this project to learn more about PowerShell and how to take full advantage of Git/GitHub in a collaborative environment. 
 
 ### Features: 
 
